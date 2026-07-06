@@ -45,7 +45,7 @@ async def stream_agent_thoughts(agent_id: str, tenant_id: str, task_id: str, pro
                 "timestamp": firestore.SERVER_TIMESTAMP if db else datetime.utcnow().isoformat()
             }
             if db:
-                db.collection("logs").add(log_entry)
+                db.collection("global_context").add(log_entry)
             print(f"[{agent_id} THOUGHT] {thought.strip()}")
             
         print(f"[{agent_id}] Task completed.")
