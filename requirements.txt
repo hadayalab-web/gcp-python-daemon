@@ -1,2 +1,5 @@
 google-antigravity
 firebase-admin
+fastapi
+uvicorn
+httpx
