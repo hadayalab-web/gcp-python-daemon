@@ -94,6 +94,17 @@ def on_task_snapshot(col_snapshot, changes, read_time):
             loop = asyncio.get_event_loop()
             loop.create_task(stream_agent_thoughts(agent_id, tenant_id, task_id, prompt, config))
 
+async def health_check_handler(reader, writer):
+    try:
+        await reader.read(1024)
+        response = b"HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nOK"
+        writer.write(response)
+        await writer.drain()
+    except Exception:
+        pass
+    finally:
+        writer.close()
+
 async def main():
     print("========================================")
     print("🧠 Touchless-FDE V3: Python Daemon Core")
@@ -116,10 +127,13 @@ async def main():
             config=CONSULTANT_CONFIG
         )
 
+    port = int(os.environ.get("PORT", 8080))
+    print(f"[DAEMON] Starting health check server on port {port}...")
+    server = await asyncio.start_server(health_check_handler, '0.0.0.0', port)
+
     print("[DAEMON] Event loop running. Waiting for events...")
-    # Keep the daemon running infinitely
-    while True:
-        await asyncio.sleep(3600)
+    async with server:
+        await server.serve_forever()
 
 if __name__ == "__main__":
     try:
